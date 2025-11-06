@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pulsa Transfer - Demo</title>
+
+  <!-- Bootstrap 5.3 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --brand: #2D9FF6;
+      --muted: #6b7280;
+      --card-radius: 12px;
+    }
+
+    body{
+      font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg,var(--brand), rgba(45,159,246,0.95));
+      margin:0;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      min-height:100vh;
+    }
+
+    /* App container centered like mobile */
+    .app {
+      max-width:460px;
+      margin:0 auto;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      background: transparent;
+    }
+
+    /* Header (colored) */
+    .top {
+      padding:14px 16px;
+      color:white;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .top .back {
+      width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.14);display:flex;align-items:center;justify-content:center; cursor: pointer;
+    }
+    .top h1{font-size:18px;margin:0;font-weight:600;flex:1;text-align:center;}
+    
+    /* White content below header */
+    .main {
+      background: #f6f8fb;
+      border-top-left-radius:18px;
+      border-top-right-radius:18px;
+      margin-top: -6px;
+      padding: 18px;
+      min-height: calc(100vh - 86px);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06) inset;
+    }
+
+    /* Card-like white area for form & lists */
+    .panel {
+      background: #fff;
+      border-radius: var(--card-radius);
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+      margin-bottom:12px;
+    }
+
+    /* Input */
+    .form-control {
+      border-radius: 10px;
+      border:1px solid #e6eef9;
+    }
+    .form-control:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(45,159,246,0.15);
+    }
+
+    .action-row .btn {
+      border-radius: 10px;
+    }
+
+    /* Provider radio styled */
+    .provider-group {
+      display:flex;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .provider-btn {
+      flex:1;
+      padding:10px 12px;
+      border-radius:10px;
+      background:rgba(13,27,47,0.03);
+      text-align:center;
+      cursor:pointer;
+      border:1px solid rgba(13,27,47,0.04);
+      color:#334155;
+      font-weight:600;
+      transition: all .15s ease;
+    }
+    .provider-btn.active {
+      background: linear-gradient(180deg,#fff,#f0f6ff);
+      border:1px solid rgba(45,159,246,0.18);
+      color: var(--brand);
+      box-shadow: 0 6px 18px rgba(45,159,246,0.08);
+    }
+
+    /* kategori radio styled like pills */
+    .kategori {
+      display:flex;
+      gap:8px;
+      margin-bottom:12px;
+      overflow-x: auto; /* Memungkinkan scroll horizontal jika tidak muat */
+      padding-bottom: 4px;
+    }
+    .kategori input { display:none; }
+    .kategori label {
+      padding:8px 12px;border-radius:999px;background:#eef6ff;color:var(--brand);cursor:pointer;font-weight:600;border:1px solid rgba(45,159,246,0.12);
+      white-space: nowrap; /* Mencegah teks pindah baris */
+      transition: all .15s ease;
+    }
+    .kategori input:checked + label {
+      background: var(--brand); color:#fff;
+      box-shadow: 0 8px 20px rgba(45,159,246,0.15);
+    }
+
+    /* Product list style */
+    .produk-card {
+      border-radius:12px;
+      background:#fff;
+      padding:14px;
+      border:1px solid rgba(15,23,42,0.04);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease;
+      height: 100%; /* Membuat kartu sama tinggi */
+    }
+    .produk-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(2,6,23,0.06); }
+    .produk-amount { font-weight:700; font-size:16px; color:#111827; }
+    .produk-days { color:var(--muted); font-size:13px; }
+    .produk-price { color:var(--brand); font-weight:700; }
+    .produk-card .stok-badge { margin-top: auto; padding-top: 8px; } /* Mendorong badge stok ke bawah */
+
+    /* Backdrop (dark no-blur) */
+    .overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.56); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:1040;
+    }
+    .overlay.show { opacity:1; pointer-events:auto; }
+
+    /* bottom modal / sheet */
+    .sheet {
+      position:fixed;
+      left:0; right:0;
+      bottom:-100%;
+      max-width:520px;
+      margin:0 auto;
+      background:#fff;
+      border-top-left-radius:16px;
+      border-top-right-radius:16px;
+      padding:16px;
+      z-index:1050;
+      transition: bottom .28s cubic-bezier(.2,.9,.25,1);
+      box-shadow: 0 -10px 40px rgba(2,6,23,0.2);
+    }
+    .sheet.show { bottom:0; }
+    .sheet h5{ margin:0 0 8px 0; font-weight:700;}
+    .sheet p.small { color:#6b7280; margin-bottom:14px; }
+
+    /* responsive tweaks */
+    @media(min-width:560px){
+      .app { margin-top:24px; border-radius:12px; overflow:hidden; background:transparent; }
+      .main { border-radius:12px; margin-top: -12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-labelledby="appTitle">
+    <!-- Header -->
+    <div class="top">
+      <div class="back" onclick="history.back()" title="Kembali">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18l-6-6 6-6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1 id="appTitle">Pulsa Transfer</h1>
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.08)"></div>
+    </div>
+
+    <!-- White content -->
+    <main class="main">
+      <!-- Form panel -->
+      <section class="panel" aria-label="Form">
+        <label for="mainPhone" class="form-label small text-muted">Nomor Pengisian *</label>
+        <div class="mb-3">
+          <input id="mainPhone" type="tel" class="form-control" placeholder="Contoh: 0856xxxxxxx" inputmode="numeric" />
+        </div>
+
+        <div class="d-flex gap-2 action-row">
+          <button id="btnFill" type="button" class="btn btn-outline-primary w-50">Hubungi Admin</button>
+          <button id="btnContact" type="button" class="btn btn-outline-secondary w-50">📇 Akses Kontak</button>
+        </div>
+      </section>
+
+      <!-- Provider selection -->
+      <div class="panel">
+        <div class="provider-group" role="tablist" aria-label="Provider">
+          <div id="providerA" class="provider-btn active" data-provider="akrab" tabindex="0">Paket Akrab</div>
+          <div id="providerB" class="provider-btn" data-provider="kuota" tabindex="0">Cek Kuota</div>
+        </div>
+
+        <!-- Paket Akrab content -->
+        <div id="akrabSection">
+          <div class="kategori" role="tablist" aria-label="Kategori Paket">
+            <input type="radio" name="kategori" id="katHarian" value="harian" checked>
+            <label for="katHarian">Harian</label>
+
+            <input type="radio" name="kategori" id="katBulanan" value="bulanan">
+            <label for="katBulanan">Bulanan</label>
+            
+            <!-- Tambahan kategori bisa diletakkan di sini -->
+            <input type="radio" name="kategori" id="katMingguan" value="mingguan">
+            <label for="katMingguan">Mingguan</label>
+          </div>
+          
+          <!-- === Tombol Refresh Stok BARU (Modern) === -->
+          <div class="text-end mb-2" style="margin-top: -8px;">
+            <button id="btnRefreshStok" class="btn btn-sm btn-outline-primary border-0 d-inline-flex align-items-center" style="font-size: 12px; padding: 4px 8px; gap: 4px;">
+              <!-- Ikon Refresh SVG -->
+              <svg class="refresh-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L20.49 9"></path><path d="M20.49 15a9 9 0 0 1-14.85 3.36L3.51 15"></path></svg>
+              <span>Refresh Stok</span>
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <!-- product list -->
+          <div id="productGrid" class="row g-3">
+             <!-- Loading state -->
+             <div id="productLoader" class="col-12 text-center py-5 d-none">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Memuat...</span>
+                </div>
+                <div class="mt-2 text-muted">Memuat produk...</div>
+             </div>
+             <!-- Error state -->
+             <div id="productError" class="col-12 text-center py-5 d-none">
+                <div class="text-danger">Gagal memuat produk.</div>
+                <button id="btnRetryLoad" class="btn btn-sm btn-outline-primary mt-2">Coba Lagi</button>
+             </div>
+          </div>
+        </div>
+
+        <!-- Cek Kuota content -->
+        <div id="kuotaSection" class="d-none">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="small text-muted">Gunakan nomor dari form utama</div>
+            <button id="btnCheckQuota" class="btn btn-sm btn-primary">
+              <!-- Ikon/teks akan diubah oleh JS -->
+              <span>Cek</span>
+            </button>
+          </div>
+          <div id="quotaResult" class="alert alert-light text-dark d-none"></div>
+        </div>
+      </div>
+
+      <!-- Spacer -->
+      <div style="height:40px"></div>
+    </main>
+  </div>
+
+  <!-- Overlay (dark, no blur) -->
+  <div id="overlay" class="overlay" aria-hidden="true"></div>
+
+  <!-- Product Detail Sheet -->
+  <div id="sheetDetail" class="sheet" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <h5 id="detailTitle">Detail Produk</h5>
+    <p id="detailSyarat" class="small"></p>
+    <div class="d-flex justify-content-between">
+      <button id="closeDetail" class="btn btn-outline-secondary">Kembali</button>
+      <button id="proceedBuy" class="btn btn-primary">Lanjut</button>
+    </div>
+  </div>
+
+  <!-- Purchase Detail Sheet -->
+  <div id="sheetBuy" class="sheet" role="dialog" aria-modal="true" aria-labelledby="buyTitle">
+    <h5 id="buyTitle">Detail Pembelian</h5>
+    <p class="small text-muted mb-2">Periksa kembali sebelum mengirim ke WhatsApp</p>
+    <div class="mb-2"><strong>Nomor:</strong> <span id="buyNumber"></span></div>
+    <div class="mb-2"><strong>Produk:</strong> <span id="buyProduct"></span></div>
+    <div class="mb-3"><strong>Harga Modal:</strong> <span id="buyPrice"></span></div>
+    <div class="d-flex justify-content-between">
+      <button id="backFromBuy" class="btn btn-outline-secondary">Kembali</button>
+      <button id="sendWA" class="btn btn-success">KIRIM</button>
+    </div>
+  </div>
+
+  <!-- Info Sheet (Pengganti alert) -->
+  <div id="sheetInfo" class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="infoTitle">
+    <h5 id="infoTitle">Informasi</h5>
+    <p id="infoMessage" class="small"></p>
+    <div class="text-end">
+      <button id="closeInfo" class="btn btn-primary">Tutup</button>
+    </div>
+  </div>
+
+
+  <!-- Bootstrap bundle (no JQuery) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // === URL API BARU ===
+    const API_URL = "https://script.google.com/macros/s/AKfycbzztG5AEtT8jY-IVttcofcjBHI_d5qzi2IHWW1HYGRIdCuxvft6vnUFoJGUJgXe-I6l/exec";
+    
+    // --- DATA MASTER (HARDCODED) ---
+    // Ini adalah "database" produk Anda di sisi klien.
+    // API hanya akan memperbarui 'stok' dari data ini.
+    // === PERUBAHAN: Menambahkan 'apiCategory' dan 'apiKey' ===
+    const hardcodedProducts = {
+      harian: [
+        {amount:'5.000',days:'+3 Hari Masa Aktif',price:'Rp 5.950',priceRaw:5950,name:'Pulsa 5.000',stok:0, apiCategory: 'stok_v4', apiKey: 'XL CIRCLE 7GB-11GB FULL KUOTA UTAMA REGULER'},
+        {amount:'10.000',days:'+5 Hari Masa Aktif',price:'Rp 10.925',priceRaw:10925,name:'Pulsa 10.000',stok:0, apiCategory: 'Harian', apiKey: 'Pulsa 10.000'},
+        {amount:'15.000',days:'+5 Hari Masa Aktif',price:'Rp 15.800',priceRaw:15800,name:'Pulsa 15.000',stok:0, apiCategory: 'Harian', apiKey: 'Pulsa 15.000'},
+      ],
+      bulanan: [
+        {amount:'20.000',days:'+5 Hari Masa Aktif',price:'Rp 20.675',priceRaw:20675,name:'Pulsa 20.000',stok:0, apiCategory: 'Bulanan', apiKey: 'Pulsa 20.000'},
+        {amount:'25.000',days:'+10 Hari Masa Aktif',price:'Rp 26.038',priceRaw:26038,name:'Pulsa 25.000',stok:0, apiCategory: 'Bulanan', apiKey: 'Pulsa 25.000'},
+        {amount:'30.000',days:'+10 Hari Masa Aktif',price:'Rp 31.200',priceRaw:31200,name:'Pulsa 30.000',stok:0, apiCategory: 'Bulanan', apiKey: 'Pulsa 30.000'},
+      ],
+      mingguan: [
+        // Contoh: Jika Anda ingin produk "Pulsa 10k Mingguan" mengambil dari API key "P10M" di object "Promo"
+        // {amount:'10.000',days:'+7 Hari',price:'Rp 11.000',priceRaw:11000,name:'Pulsa 10k Mingguan',stok:0, apiCategory: 'Promo', apiKey: 'P10M'}
+      ]
+    };
+    
+    // Variabel global untuk menyimpan data produk dari API
+    let allProducts = {}; // Akan diisi oleh cekStok()
+
+    // --- ELEMEN DOM ---
+    const providerA = document.getElementById('providerA');
+    const providerB = document.getElementById('providerB');
+    const akrabSection = document.getElementById('akrabSection');
+    const kuotaSection = document.getElementById('kuotaSection');
+    const productGrid = document.getElementById('productGrid');
+    const productLoader = document.getElementById('productLoader');
+    const productError = document.getElementById('productError');
+    const btnRetryLoad = document.getElementById('btnRetryLoad');
+    
+    // Tombol refresh baru
+    const btnRefreshStok = document.getElementById('btnRefreshStok');
+    
+    const mainPhone = document.getElementById('mainPhone');
+    const btnFill = document.getElementById('btnFill');
+    const btnContact = document.getElementById('btnContact');
+    const btnCheckQuota = document.getElementById('btnCheckQuota');
+    const quotaResult = document.getElementById('quotaResult');
+
+    // Sheets dan overlay
+    const overlay = document.getElementById('overlay');
+    const sheetDetail = document.getElementById('sheetDetail');
+    const sheetBuy = document.getElementById('sheetBuy');
+    const sheetInfo = document.getElementById('sheetInfo');
+    const infoMessage = document.getElementById('infoMessage');
+
+    // Purchase fields
+    const detailTitle = document.getElementById('detailTitle');
+    const detailSyarat = document.getElementById('detailSyarat');
+    const proceedBuy = document.getElementById('proceedBuy');
+    const buyNumber = document.getElementById('buyNumber');
+    const buyProduct = document.getElementById('buyProduct');
+    const buyPrice = document.getElementById('buyPrice');
+    const sendWA = document.getElementById('sendWA');
+
+
+    // --- FUNGSI UTAMA ---
+
+    /**
+     * Fungsi untuk mengambil data stok dari API Google Script.
+     * @param {boolean} isManualRefresh - Apakah dipicu oleh tombol refresh
+     */
+    async function cekStok(isManualRefresh = false) {
+      // Tampilkan loader utama hanya jika bukan manual refresh
+      if (!isManualRefresh) {
+        productGrid.innerHTML = ''; // Kosongkan grid
+        productLoader.classList.remove('d-none'); // Tampilkan loader
+      }
+      productError.classList.add('d-none'); // Sembunyikan error
+      
+      // Tampilkan status loading di tombol refresh
+      btnRefreshStok.disabled = true;
+      btnRefreshStok.querySelector('span:not(.spinner-border)').textContent = 'Memuat...'; // Ubah teks
+      btnRefreshStok.querySelector('.refresh-icon').classList.add('d-none'); // Sembunyikan icon
+      btnRefreshStok.querySelector('.spinner-border').classList.remove('d-none'); // Tampilkan spinner
+      
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const stokData = await response.json();
+        
+        console.log('Data API diterima:', stokData);
+        
+        // --- LOGIKA BARU: MAPPING EKSPLISIT ---
+        // Buat salinan baru dari master list (deep copy)
+        const newProductData = JSON.parse(JSON.stringify(hardcodedProducts));
+
+        // Loop melalui semua kategori LOKAL (harian, bulanan, ...)
+        for (const localCategoryKey of Object.keys(newProductData)) {
+          
+          // Loop melalui semua produk di kategori LOKAL
+          newProductData[localCategoryKey].forEach(product => {
+            
+            // 1. Ambil instruksi mapping dari produk
+            const apiCategory = product.apiCategory; // Misal: "Harian"
+            const apiKey = product.apiKey;         // Misal: "Pulsa 5.000"
+
+            // 2. Cek apakah data API sesuai mapping ada
+            if (apiCategory && apiKey && stokData[apiCategory] && stokData[apiCategory][apiKey] !== undefined) {
+              // 3. Jika ya, update stok dari API (bisa 0, 5, 10, dll)
+              product.stok = stokData[apiCategory][apiKey];
+            } else {
+              // 4. === PERUBAHAN ===
+              // Jika tidak ada mapping atau tidak ditemukan di API, set stok ke status 'TANYA'
+              product.stok = 'TANYA';
+            }
+          });
+        }
+        
+        allProducts = newProductData; // Set data global baru
+        renderProducts(); // Render ulang produk dengan data baru
+
+        if (isManualRefresh) {
+          showInfo("Stok berhasil diperbarui.");
+        }
+
+      } catch (error) {
+        console.error("--- GAGAL MENGAMBIL DATA API ---");
+        console.error("Error:", error.message);
+        
+        // Perbarui UI Error
+        productError.querySelector('.text-danger').textContent = 'Gagal terhubung ke API.';
+        const oldErrorMsg = productError.querySelector('.small.text-muted');
+        if (oldErrorMsg) oldErrorMsg.remove();
+        productError.querySelector('.text-danger').insertAdjacentHTML('afterend', '<div class="small text-muted mt-1">Server mungkin offline atau data tidak valid.</div>');
+        productError.classList.remove('d-none');
+        
+        // Sebagai fallback, gunakan data hardcoded jika API gagal (stok akan 0)
+        allProducts = JSON.parse(JSON.stringify(hardcodedProducts)); 
+        showInfo("Gagal terhubung ke server. Menampilkan data offline (stok 0).");
+        renderProducts(); // Render produk dari data hardcoded
+        
+      } finally {
+        productLoader.classList.add('d-none'); // Sembunyikan loader
+        // Reset tombol refresh
+        btnRefreshStok.disabled = false;
+        btnRefreshStok.querySelector('span:not(.spinner-border)').textContent = 'Refresh Stok'; // Kembalikan teks
+        btnRefreshStok.querySelector('.refresh-icon').classList.remove('d-none'); // Tampilkan icon
+        btnRefreshStok.querySelector('.spinner-border').classList.add('d-none'); // Sembunyikan spinner
+      }
+    };
+
+    /**
+     * Merender daftar produk ke UI berdasarkan kategori yang dipilih.
+     */
+    function renderProducts(){
+      productGrid.innerHTML=''; // Bersihkan grid
+      
+      const activeCategory = document.querySelector('input[name="kategori"]:checked')?.value || 'harian';
+      const list = allProducts[activeCategory] || [];
+
+      if (list.length === 0) {
+          productGrid.innerHTML = `<div class="col-12 text-center text-muted py-4">Produk tidak ditemukan untuk kategori ini.</div>`;
+          return;
+      }
+
+      list.forEach((p,idx)=>{
+        const col = document.createElement('div');
+        col.className = 'col-12'; // Diubah: Selalu 1 kolom (12/12) untuk semua ukuran layar
+        
+        // === PERUBAHAN LOGIKA STOK ===
+        let stokText = '';
+        let disabledClass = '';
+        let isClickable = false;
+        let clickHandler = null;
+
+        if (p.stok > 0) {
+            // Kasus 1: Stok ada (Angka > 0)
+            stokText = `<span class="badge bg-success">Stok ${p.stok}</span>`;
+            isClickable = true;
+            clickHandler = () => openDetail(p); // Arahkan ke detail pembelian
+        } else if (p.stok === 0) {
+            // Kasus 2: Stok Habis (Angka 0 dari API)
+            stokText = `<span class="badge bg-danger">Stok Habis</span>`;
+            disabledClass = 'opacity-50 pe-none'; // Matikan tombol
+            isClickable = false;
+        } else if (p.stok === 'TANYA') {
+            // Kasus 3: Stok Tidak Diketahui (String 'TANYA' dari API)
+            stokText = `<span class="badge bg-primary">Tanya Stok</span>`; // Badge biru
+            isClickable = true;
+            clickHandler = () => openDetail(p); // <-- PERUBAHAN: Tetap panggil openDetail(p)
+        }
+        
+        // --- Tata Letak Kartu BARU (sesuai gambar) ---
+        col.innerHTML=`
+          <div class="produk-card ${disabledClass}" role="button" data-idx="${idx}">
+            
+            <!-- Baris 1: Amount & Price -->
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="produk-amount">${p.amount}</div>
+              <div class="produk-price">${p.price}</div>
+            </div>
+            
+            <!-- Baris 2: Masa Aktif -->
+            <div class="produk-days">${p.days}</div>
+            
+            <!-- Baris 3: Stok (didorong ke bawah oleh 'stok-badge') -->
+            <div class="stok-badge">
+              ${stokText}
+            </div>
+          </div>`;
+          
+        if(isClickable){
+          col.querySelector('.produk-card').addEventListener('click', clickHandler);
+        }
+        productGrid.appendChild(col);
+      });
+    }
+    
+    /**
+     * Menampilkan modal info (pengganti alert)
+     * @param {string} message - Pesan yang ingin ditampilkan
+     */
+    function showInfo(message) {
+        infoMessage.textContent = message;
+        overlay.classList.add('show');
+        sheetInfo.classList.add('show');
+    }
+
+    /**
+     * Beralih antara tab Provider
+     * @param {'akrab' | 'kuota'} which - Provider yang dipilih
+     */
+    function setActiveProvider(which) {
+      if (which === 'akrab') {
+        providerA.classList.add('active');
+        providerB.classList.remove('active');
+        akrabSection.style.display = '';
+        kuotaSection.classList.add('d-none');
+      } else {
+        providerB.classList.add('active');
+        providerA.classList.remove('active');
+        akrabSection.style.display = 'none';
+        kuotaSection.classList.remove('d-none');
+      }
+    }
+
+    /**
+     * Membuka sheet detail produk
+     * @param {object} p - Objek produk
+     */
+    function openDetail(p) {
+      detailTitle.textContent = p.name || p.amount;
+      detailSyarat.textContent = p.days + ' · ' + (p.price || '');
+      
+      // Simpan data produk di tombol (untuk kedua kasus)
+      proceedBuy.dataset.name = p.name || p.amount;
+      proceedBuy.dataset.price = p.priceRaw || (p.price ? p.price.replace(/[^0-9]/g,'') : 0);
+
+      // === PERUBAHAN: Sesuaikan tombol berdasarkan stok ===
+      if (p.stok === 'TANYA') {
+        proceedBuy.textContent = 'Tanya Stok via WA';
+        proceedBuy.classList.remove('btn-primary');
+        proceedBuy.classList.add('btn-success'); // Warna hijau
+        proceedBuy.dataset.action = 'tanya';
+      } else {
+        // Stok > 0 (normal)
+        proceedBuy.textContent = 'Lanjut';
+        proceedBuy.classList.remove('btn-success');
+        proceedBuy.classList.add('btn-primary'); // Warna biru
+        proceedBuy.dataset.action = 'beli';
+      }
+      
+      overlay.classList.add('show');
+      sheetDetail.classList.add('show');
+    }
+
+    /**
+     * Memformat angka menjadi format Rupiah
+     * @param {number} num - Angka
+     */
+    function formatRupiah(num) {
+      return 'Rp ' + Number(num).toLocaleString('id-ID');
+    }
+    
+    /**
+     * === FUNGSI BARU: Arahkan ke WA Admin untuk tanya stok ===
+     * @param {object} product - Objek produk yang diklik
+     */
+    function tanyaAdmin(product) {
+        const productName = product.name || product.amount;
+        const adminNumber = '6289518330383'; // Nomor admin
+        const text = `Halo, apakah produk "${productName}" masih tersedia?`;
+        const url = `https://wa.me/${adminNumber}?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    /**
+     * Menutup semua sheet yang terbuka
+     */
+    function closeAllSheets() {
+        sheetDetail.classList.remove('show');
+        sheetBuy.classList.remove('show');
+        sheetInfo.classList.remove('show');
+        overlay.classList.remove('show');
+    }
+    
+    /**
+     * === FUNGSI BARU: Validasi Nomor Telepon ===
+     * @param {string} phone - Nomor telepon dari input
+     * @returns {object} - { valid: boolean, message: string, phone: string }
+     */
+    function validatePhone(phone) {
+        let cleanPhone = phone.trim().replace(/\D/g, ''); // Hapus spasi dan non-digit
+
+        // Ubah 62... menjadi 0...
+        if (cleanPhone.startsWith('62')) {
+            cleanPhone = '0' + cleanPhone.slice(2);
+        }
+
+        if (!cleanPhone.startsWith('08')) {
+            return { valid: false, message: 'Nomor telepon harus diawali dengan 08.' };
+        }
+
+        if (cleanPhone.length < 10 || cleanPhone.length > 14) {
+            return { valid: false, message: 'Panjang nomor telepon tidak valid (10-14 digit).' };
+        }
+        
+        return { valid: true, message: 'Valid', phone: cleanPhone };
+    }
+
+    /**
+     * === FUNGSI BARU: Generate Transaction ID ===
+     * @returns {string} - ID Transaksi unik
+     */
+    function generateTxID() {
+        // Membuat ID acak: TRX + 6 digit timestamp + 3 char acak
+        return 'TRX' + Date.now().toString().slice(-6) + Math.random().toString(36).slice(2, 5).toUpperCase();
+    }
+
+
+    // --- EVENT LISTENERS ---
+
+    // Event listener untuk radio kategori
+    document.querySelectorAll('input[name="kategori"]').forEach(r=>{
+      r.addEventListener('change', renderProducts); // Memanggil renderProducts tanpa argumen
+    });
+
+    // Panggil API saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+        cekStok(false); // Panggilan awal
+        setActiveProvider('akrab'); // Set default provider
+    });
+    
+    // Tombol Coba Lagi (jika error)
+    btnRetryLoad.addEventListener('click', () => cekStok(false));
+    
+    // Tombol Refresh Stok BARU
+    btnRefreshStok.addEventListener('click', () => cekStok(true)); // Panggilan manual
+
+
+    // Provider button toggles
+    providerA.addEventListener('click', () => setActiveProvider('akrab'));
+    providerB.addEventListener('click', () => setActiveProvider('kuota'));
+
+    // Fill phone button (Sekarang jadi tombol Hubungi Admin)
+    btnFill.addEventListener('click', () => {
+      // === PERUBAHAN FUNGSI ===
+      const adminNumber = '6289518330383';
+      const text = `Halo, saya ingin bertanya...`;
+      const url = `https://wa.me/${adminNumber}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    });
+
+    // Contact Picker API
+    btnContact.addEventListener('click', async () => {
+      if ('contacts' in navigator && 'select' in navigator.contacts) {
+        try {
+          const contacts = await navigator.contacts.select(['name','tel'], {multiple:false});
+          if (contacts && contacts.length && contacts[0].tel && contacts[0].tel.length) {
+            // Langsung validasi dan bersihkan nomor dari kontak
+            const validation = validatePhone(contacts[0].tel[0]);
+            mainPhone.value = validation.phone || contacts[0].tel[0].replace(/\D/g,''); 
+          }
+        } catch (err) {
+          console.warn(err);
+          showInfo('Akses kontak dibatalkan atau tidak tersedia.');
+        }
+      } else {
+        showInfo('Fitur akses kontak tidak didukung di browser ini.');
+      }
+    });
+
+    // Cek Kuota (simulasi)
+    btnCheckQuota.addEventListener('click', () => {
+      // === VALIDASI BARU ===
+      const validation = validatePhone(mainPhone.value);
+      if (!validation.valid) {
+          return showInfo(validation.message);
+      }
+      const no = validation.phone; // Gunakan nomor yang sudah bersih
+      
+      quotaResult.classList.add('d-none');
+      btnCheckQuota.disabled = true;
+      
+      btnCheckQuota.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memeriksa...`;
+      
+      setTimeout(()=>{
+        btnCheckQuota.disabled = false;
+        btnCheckQuota.innerHTML = `<span>Cek</span>`;
+        quotaResult.textContent = `Nomor ${no} memiliki sisa kuota 4.2 GB (paket utama). Masa aktif 30 hari.`;
+        quotaResult.classList.remove('d-none');
+      }, 1400);
+    });
+
+    // Tutup sheet detail
+    document.getElementById('closeDetail').addEventListener('click', () => {
+      sheetDetail.classList.remove('show');
+      overlay.classList.remove('show');
+    });
+
+    // Tombol 'Lanjut' dari detail ke pembelian
+    proceedBuy.addEventListener('click', (e) => {
+      
+      const action = e.target.dataset.action;
+      const pName = e.target.dataset.name; // Deklarasi ini sudah benar dan akan dipakai di bawah
+
+      // === PERUBAHAN: Cek aksi tombol ===
+      if (action === 'tanya') {
+        // Aksi 1: Tanya Stok
+        tanyaAdmin({ name: pName }); // Kirim objek minimal
+        closeAllSheets(); // Tutup semua sheet
+        return; // Selesai
+      }
+
+      // Aksi 2: Beli (logika yang sudah ada)
+      sheetDetail.classList.remove('show');
+      
+      // === VALIDASI BARU ===
+      const validation = validatePhone(mainPhone.value);
+      if (!validation.valid) {
+          showInfo(validation.message);
+          overlay.classList.remove('show'); // Sembunyikan overlay
+          return;
+      }
+      
+      const phone = validation.phone; // Gunakan nomor yang sudah bersih
+      // const pName = e.target.dataset.name; // <-- DIHAPUS: Ini yang menyebabkan error
+      const pPrice = e.target.dataset.price;
+
+      buyNumber.textContent = phone;
+      buyProduct.textContent = pName;
+      buyPrice.textContent = formatRupiah(pPrice);
+      
+      overlay.classList.add('show');
+      sheetBuy.classList.add('show');
+    });
+
+    // Tombol 'Kembali' dari pembelian
+    document.getElementById('backFromBuy').addEventListener('click', () => {
+      sheetBuy.classList.remove('show');
+      overlay.classList.remove('show');
+    });
+    
+    // Tombol 'Tutup' di Info Sheet
+    document.getElementById('closeInfo').addEventListener('click', closeAllSheets);
+
+    // Kirim WA
+    sendWA.addEventListener('click', () => {
+      const nomor = buyNumber.textContent.trim();
+      const produk = buyProduct.textContent.trim();
+      const harga = buyPrice.textContent.trim();
+      
+      // === ID TRANSAKSI BARU ===
+      const txID = generateTxID();
+      
+      if (!nomor || nomor === '-') {
+        return showInfo('Nomor tujuan kosong.');
+      }
+      
+      const text = `ID Transaksi: ${txID}\nOrder Pulsa\nProduk: ${produk}\nNomor: ${nomor}\nHarga: ${harga}`;
+      const url = `https://wa.me/6289518330383?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+      
+      // Tutup sheet setelah kirim
+      setTimeout(closeAllSheets, 500);
+    });
+
+    // Close overlays jika diklik di luar sheet
+    overlay.addEventListener('click', closeAllSheets);
+
+    // Accessibility: close with Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('show')) {
+        closeAllSheets();
+      }
+    });
+
+  </script>
+</body>
+</html>
