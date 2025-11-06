@@ -53,12 +53,12 @@
     /* White content below header */
     .main {
       background: #f6f8fb;
-      border-top-left-radius:18px;
-      border-top-right-radius:18px;
-      margin-top: -6px;
+      border-top-left-radius: 0; /* Dihapus radius atas */
+      border-top-right-radius: 0; /* Dihapus radius atas */
+      margin-top: 0; /* Mulai dari atas */
       padding: 18px;
-      min-height: calc(100vh - 86px);
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.06) inset;
+      min-height: 100vh; /* Penuhi layar */
+      box-shadow: none; /* Dihapus shadow atas */
     }
 
     /* Card-like white area for form & lists */
@@ -174,14 +174,15 @@
 
     /* responsive tweaks */
     @media(min-width:560px){
-      .app { margin-top:24px; border-radius:12px; overflow:hidden; background:transparent; }
-      .main { border-radius:12px; margin-top: -12px; }
+      .app { margin-top:24px; border-radius:12px; overflow:hidden; background:transparent; min-height: auto; /* Reset min-height */ }
+      .main { border-radius:12px; margin-top: 0; min-height: auto; /* Reset min-height */ }
     }
   </style>
 </head>
 <body>
   <div class="app" role="application" aria-labelledby="appTitle">
-    <!-- Header -->
+    <!-- Header (Dihapus) -->
+    <!-- 
     <div class="top">
       <div class="back" onclick="history.back()" title="Kembali">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -191,6 +192,7 @@
       <h1 id="appTitle">Pulsa Transfer</h1>
       <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.08)"></div>
     </div>
+    -->
 
     <!-- White content -->
     <main class="main">
@@ -202,7 +204,7 @@
         </div>
 
         <div class="d-flex gap-2 action-row">
-          <button id="btnFill" type="button" class="btn btn-outline-primary w-50">Hubungi Admin</button>
+          <button id="btnFill" type="button" class="btn btn-outline-primary w-50">💬 Hubungi Admin</button>
           <button id="btnContact" type="button" class="btn btn-outline-secondary w-50">📇 Akses Kontak</button>
         </div>
       </section>
